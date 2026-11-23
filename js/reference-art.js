@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import {WIDTH,HEIGHT,PLATES,REFERENCE_SCREWS,COLORS,pointFor} from './reference-layout.js?v=20261107-r5-final';
+import {WIDTH,HEIGHT,PLATES,REFERENCE_SCREWS,COLORS,pointFor} from './reference-layout.js?v=20261123-pink-outline';
 export const artwork=await new Promise((resolve,reject)=>{const im=new Image();im.onload=()=>resolve(im);im.onerror=reject;im.src='assets/reference/art-native.png?v=20261107-r5-final';});
 const NX=artwork.naturalWidth/WIDTH,NY=artwork.naturalHeight/HEIGHT;
 const samples=document.createElement('canvas');samples.width=artwork.naturalWidth;samples.height=artwork.naturalHeight;

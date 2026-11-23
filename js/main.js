@@ -6,8 +6,8 @@ import {UndoManager} from './undo.js?v=20261107-r5-final';
 import {AudioManager} from './audio.js?v=20261107-r5-final';
 import {findNextMove} from './hint.js?v=20261107-r5-final';
 import {startTimer,stopTimer,getElapsedSeconds,recordMove,recordHintUsed,recordUndoUsed,updateMaxBuffer,onLevelComplete,getRecords,resetCurrentRun} from './scores.js?v=20261107-r5-final';
-import {WIDTH,HEIGHT,PLATES,REFERENCE_SCREWS,CORE_BUFFER,BOX_SLOTS,pointFor,configureLevelLayout} from './reference-layout.js?v=20261107-r5-final';
-import {sprite,screwArt,plateArt,desktopPlateArt,collectorArt,emptySlotArt,progressArt,texture,HAND_RECT,backdropURL} from './reference-art.js?v=20261112-desktop';
+import {WIDTH,HEIGHT,PLATES,REFERENCE_SCREWS,CORE_BUFFER,BOX_SLOTS,pointFor,configureLevelLayout} from './reference-layout.js?v=20261123-pink-outline';
+import {sprite,screwArt,plateArt,desktopPlateArt,collectorArt,emptySlotArt,progressArt,texture,HAND_RECT,backdropURL} from './reference-art.js?v=20261123-pink-outline';
 import {MOBILE_VIEW,DESKTOP_VIEW,hudPoint,boardPoint,toolPoint,desktopBackdrop} from './view-layout.js?v=20261112-desktop';
 
 const stage=document.getElementById('reference-stage'),container=document.getElementById('game-container'),canvas=document.getElementById('game-canvas');
