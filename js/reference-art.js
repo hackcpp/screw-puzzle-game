@@ -108,18 +108,13 @@ export function plateArt(pd,index,pristine=false){
  const {canvas:c,x,y,w,h}=boundsCanvas(meta.bounds),ctx=c.getContext('2d'),path=new Path2D(meta.path);transform(ctx,x,y);ctx.lineJoin='round';ctx.lineCap='round';ctx.fillStyle=pd.art==='heart'&&!pristine?'#dcfd8d':fillColor;
  if(!pristine){ctx.strokeStyle='#6f7779';ctx.lineWidth=17;ctx.stroke(path);}
  ctx.strokeStyle='#fff';ctx.lineWidth=13;ctx.stroke(path);ctx.fill(path);
- // 红板是纯色枕形，用同一条完整轮廓绘制，避免螺丝修补区拼接出两套边框。
- if(pd.art==='back'){ctx.strokeStyle='#fff';ctx.lineWidth=13;ctx.stroke(path);}
- if(pd.art&&pd.art!=='back'){
+ // 红板和粉板使用完整轮廓，避免螺丝与遮挡修补区拼接出错位的边框。
+ const solidPlate=pd.art==='back'||pd.art==='pink';
+ if(solidPlate){ctx.strokeStyle='#fff';ctx.lineWidth=13;ctx.stroke(path);}
+ if(pd.art&&!solidPlate){
   const layer=boundsCanvas(meta.bounds).canvas,lc=layer.getContext('2d');transform(lc,x,y);lc.drawImage(artwork,0,0,WIDTH,HEIGHT);
   const mask=boundsCanvas(meta.bounds).canvas,mc=mask.getContext('2d');transform(mc,x,y);mc.fillStyle='#fff';mc.strokeStyle='#fff';mc.lineJoin='round';mc.lineWidth=pristine?34:20;mc.fill(path);mc.stroke(path);
   lc.resetTransform();if(pd.art==='heart')isolateHeart(layer,x,y);else{lc.globalCompositeOperation='destination-in';lc.drawImage(mask,0,0);lc.globalCompositeOperation='source-over';}transform(lc,x,y);
-  if(pd.art==='pink'){
-   // 合成原图把下层红板边缘和螺丝印在粉板内部；重铺不透明底色，保留原图外边框。
-   const interior=boundsCanvas(meta.bounds).canvas,ic=interior.getContext('2d');transform(ic,x,y);
-   ic.fillStyle=fillColor;ic.fill(path);ic.globalCompositeOperation='destination-out';ic.strokeStyle='#000';ic.lineWidth=16;ic.lineJoin='round';ic.stroke(path);
-   lc.save();lc.resetTransform();lc.drawImage(interior,0,0);lc.restore();
-  }
   let repairMask=null;
   if(pristine){
    lc.save();lc.clip(path);for(const id of meta.occluders){const p=new Path2D(PLATES[id].path);lc.fillStyle=meta.color;lc.strokeStyle=meta.color;lc.lineWidth=25;lc.fill(p);lc.stroke(p);}lc.restore();
