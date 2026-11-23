@@ -108,7 +108,9 @@ export function plateArt(pd,index,pristine=false){
  const {canvas:c,x,y,w,h}=boundsCanvas(meta.bounds),ctx=c.getContext('2d'),path=new Path2D(meta.path);transform(ctx,x,y);ctx.lineJoin='round';ctx.lineCap='round';ctx.fillStyle=pd.art==='heart'&&!pristine?'#dcfd8d':fillColor;
  if(!pristine){ctx.strokeStyle='#6f7779';ctx.lineWidth=17;ctx.stroke(path);}
  ctx.strokeStyle='#fff';ctx.lineWidth=13;ctx.stroke(path);ctx.fill(path);
- if(pd.art){
+ // 红板是纯色枕形，用同一条完整轮廓绘制，避免螺丝修补区拼接出两套边框。
+ if(pd.art==='back'){ctx.strokeStyle='#fff';ctx.lineWidth=13;ctx.stroke(path);}
+ if(pd.art&&pd.art!=='back'){
   const layer=boundsCanvas(meta.bounds).canvas,lc=layer.getContext('2d');transform(lc,x,y);lc.drawImage(artwork,0,0,WIDTH,HEIGHT);
   const mask=boundsCanvas(meta.bounds).canvas,mc=mask.getContext('2d');transform(mc,x,y);mc.fillStyle='#fff';mc.strokeStyle='#fff';mc.lineJoin='round';mc.lineWidth=pristine?34:20;mc.fill(path);mc.stroke(path);
   lc.resetTransform();if(pd.art==='heart')isolateHeart(layer,x,y);else{lc.globalCompositeOperation='destination-in';lc.drawImage(mask,0,0);lc.globalCompositeOperation='source-over';}transform(lc,x,y);
@@ -126,11 +128,10 @@ export function plateArt(pd,index,pristine=false){
    // 再由下方已绘制的本板轮廓补齐；不能只在板内涂色，否则移除上层后会留下粉边。
    repairMask=boundsCanvas(meta.bounds).canvas;const rc=repairMask.getContext('2d');transform(rc,x,y);rc.fillStyle='#000';rc.strokeStyle='#000';rc.lineJoin='round';rc.lineWidth=70;
    for(const id of meta.occluders){const p=new Path2D(PLATES[id].path);rc.fill(p);rc.stroke(p);}
-   if(pd.art==='back')for(const sd of pd.screws){const [sx,sy]=pointFor(pd,sd);rc.beginPath();rc.arc(sx,sy,46,0,Math.PI*2);rc.fill();}
    lc.save();lc.resetTransform();lc.globalCompositeOperation='destination-out';lc.drawImage(repairMask,0,0);lc.restore();
   }
   // 只修复本板自带的螺丝底图。别的板的螺丝由遮挡区域一起扣除，避免采到粉色补成圆斑。
-  const screwPoints=!pristine&&pd.art==='back'?[]:pd.screws.map(sd=>pointFor(pd,sd));
+  const screwPoints=pd.screws.map(sd=>pointFor(pd,sd));
   for(const [sx,sy] of screwPoints){
    lc.save();lc.clip(path);lc.beginPath();lc.arc(sx,sy,37,0,Math.PI*2);
    const nearby=[],base=fillColor.match(/\w\w/g).map(v=>parseInt(v,16));

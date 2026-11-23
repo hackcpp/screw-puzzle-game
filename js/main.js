@@ -7,7 +7,7 @@ import {AudioManager} from './audio.js?v=20261107-r5-final';
 import {findNextMove} from './hint.js?v=20261107-r5-final';
 import {startTimer,stopTimer,getElapsedSeconds,recordMove,recordHintUsed,recordUndoUsed,updateMaxBuffer,onLevelComplete,getRecords,resetCurrentRun} from './scores.js?v=20261107-r5-final';
 import {WIDTH,HEIGHT,PLATES,REFERENCE_SCREWS,CORE_BUFFER,BOX_SLOTS,pointFor,configureLevelLayout} from './reference-layout.js?v=20261123-pink-outline';
-import {sprite,screwArt,plateArt,desktopPlateArt,collectorArt,emptySlotArt,progressArt,texture,HAND_RECT,backdropURL} from './reference-art.js?v=20261123-pink-opaque';
+import {sprite,screwArt,plateArt,desktopPlateArt,collectorArt,emptySlotArt,progressArt,texture,HAND_RECT,backdropURL} from './reference-art.js?v=20261123-clean-border';
 import {MOBILE_VIEW,DESKTOP_VIEW,hudPoint,boardPoint,toolPoint,desktopBackdrop} from './view-layout.js?v=20261112-desktop';
 
 const stage=document.getElementById('reference-stage'),container=document.getElementById('game-container'),canvas=document.getElementById('game-canvas');
@@ -78,7 +78,7 @@ function buildVisual(){
   const s=engine.screws[sd.id];if(s.state===ScrewState.REMOVED)return;
   let artId=pd.art?sd.id:null;
   if(pd.art&&['s2','s4'].includes(sd.id)&&engine.isExposed(sd.id))artId=null;
-  const clean=!pristine||!pd.art||s.state!==ScrewState.ON_PLATE||(pd.art&&['s2','s4'].includes(sd.id)&&engine.isExposed(sd.id));
+  const clean=!pristine||!pd.art||pd.art==='back'||s.state!==ScrewState.ON_PLATE||(pd.art&&['s2','s4'].includes(sd.id)&&engine.isExposed(sd.id));
   const cap=screwArt(s.color,artId,clean);
   const m=sprite(cap);m.userData.screwId=s.id;m.userData.artId=artId;m.userData.color=s.color;meshes[s.id]=m;
   if(s.state===ScrewState.ON_PLATE){m.renderOrder=pd.art?pd.layer*10+2:100+pd.layer;m.material.opacity=pd.art||engine.isExposed(sd.id)?1:.18;const p=pointFor(pd,sd);place(m,[p[0]+cap.centerOffset[0],p[1]+cap.centerOffset[1]],pd.layer*8+2,board);}
