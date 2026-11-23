@@ -70,7 +70,8 @@ function buildVisual(){
  const pristine=level===1&&!touched;
  levelData.plates.forEach((pd,index)=>{
   const p=engine.plates[pd.id];if(p.state!==PlateState.ACTIVE)return;
-  const art=(view===DESKTOP_VIEW?desktopPlateArt:plateArt)(pd,index,pristine),mesh=sprite(art.canvas,...art.size);mesh.renderOrder=pd.layer*10;
+  // 板件始终使用同一张干净贴图，避免首次操作切换裁剪和补边后改变轮廓。
+  const art=(view===DESKTOP_VIEW?desktopPlateArt:plateArt)(pd,index,false),mesh=sprite(art.canvas,...art.size);mesh.renderOrder=pd.layer*10;
   place(mesh,art.center,pd.layer*8,board);plates[pd.id]=mesh;
  });
  levelData.plates.forEach(pd=>pd.screws.forEach(sd=>{
@@ -122,7 +123,7 @@ async function execute(commands){
 async function pick(id,internal=false){
  if(playing||(toolBusy&&!internal)||paused||engine.gameOver||!engine.isExposed(id))return;
  audio?.unlock();if(!internal)saveUndo();
- // 引导层只用于尚未操作的首屏，点击后立即切成不含手势和光圈的干净板件。
+ // 首次操作仅清除引导层并更新螺丝贴图，板件轮廓保持不变。
  if(!touched){touched=true;buildVisual();}
  const commands=engine.tryPickScrew(id);if(!commands)return;
  if(enhanced){recordMove(id);updateMaxBuffer(engine.buffer.filter(Boolean).length);}await execute(commands);
