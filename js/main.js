@@ -20,6 +20,7 @@ const hud=new THREE.Group();scene.add(hud);
 const engine=new GameEngine(),undo=new UndoManager(engine),audio=enhanced?new AudioManager():null;
 let level=initialLevel,playing=false,toolBusy=false,paused=false,touched=false,storage=[],storageHistory=[],meshes={},plates={},levelData,scale=1,gesture=null;
 let view=MOBILE_VIEW;
+let awaitingStart=false;
 document.documentElement.dataset.build='20261112-desktop';document.documentElement.dataset.layout=view.name;
 stage.style.width=WIDTH+'px';stage.style.height=HEIGHT+'px';
 const hand=document.getElementById('tutorial-hand');Object.assign(hand.style,{left:HAND_RECT.x+'px',top:HAND_RECT.y+'px',width:HAND_RECT.w+'px',height:HAND_RECT.h+'px'});
@@ -50,7 +51,11 @@ function dialog(title,content,actions=[]){
  for(const item of actions){const b=document.createElement('button');b.className='menu-button'+(item.secondary?' secondary':'');b.textContent=item.text;b.disabled=!!item.disabled;b.onclick=item.fn;target.append(b);}
  document.getElementById('dialog').hidden=false;
 }
-function closeDialog(){document.getElementById('dialog').hidden=true;paused=false;}
+function closeDialog(){
+ document.getElementById('dialog').hidden=true;paused=false;
+ // 首屏说明关闭后才开始计时，避免把阅读规则的时间计入成绩。
+ if(awaitingStart){awaitingStart=false;if(enhanced)startTimer();}
+}
 document.getElementById('dialog-close').onclick=closeDialog;
 function saveUndo(){if(!enhanced)return;undo.saveState();storageHistory.push(storage.map(s=>({...s,xy:[...s.xy]})));if(storageHistory.length>50)storageHistory.shift();}
 function doUndo(){if(!enhanced||playing||toolBusy||!undo.canUndo())return;undo.undo();storage=storageHistory.pop();recordUndoUsed();closeDialog();buildVisual();}
@@ -211,6 +216,8 @@ addEventListener('resize',requestResize);addEventListener('orientationchange',re
 matchMedia('(hover:hover) and (pointer:fine)').addEventListener('change',requestResize);
 new ResizeObserver(requestResize).observe(document.documentElement);resize();
 function render(){requestAnimationFrame(render);renderer.render(scene,camera);}render();startLevel(level);document.getElementById('loading').hidden=true;
+// 每次打开页面先展示规则，重玩和切换关卡不重复弹出。
+awaitingStart=true;if(enhanced)stopTimer();showHelp();
 if(new URLSearchParams(location.search).has('test'))window.__gameInspection={
  read:()=>({enhanced,level,animating:playing,paused,gameOver:engine.gameOver,won:engine.won,audioState:audio?._ctx?.state||'absent',buffer:[...engine.buffer],boxes:engine.boxes.map(b=>({...b})),storage:storage.map(s=>({...s})),screws:Object.fromEntries(Object.entries(engine.screws).map(([id,s])=>[id,{...s,visible:!!meshes[id]?.visible,attached:!!meshes[id]?.parent}])),plates:Object.fromEntries(Object.entries(engine.plates).map(([id,p])=>[id,{state:p.state,attached:!!plates[id]?.parent}]))}),
  points:()=>{scene.updateMatrixWorld(true);camera.updateMatrixWorld();const r=canvas.getBoundingClientRect();return Object.fromEntries(Object.entries(meshes).filter(([id,m])=>m.parent&&m.visible).map(([id,m])=>{const p=m.getWorldPosition(new THREE.Vector3()).project(camera);return [id,{x:r.left+(p.x+1)*r.width/2,y:r.top+(1-p.y)*r.height/2}];}));}
